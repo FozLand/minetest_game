@@ -117,6 +117,7 @@ minetest.register_globalstep(function(dtime)
 			-- Apply animations based on what the player is doing
 			if player:get_hp() == 0 then
 				player_set_animation(player, "lay")
+				player:set_eye_offset({x=0,y=-14,z=0},{x=0,y=0,z=0})
 			elseif walking then
 				if player_sneak[name] ~= controls.sneak then
 					player_anim[name] = nil
@@ -124,14 +125,43 @@ minetest.register_globalstep(function(dtime)
 				end
 				if controls.LMB then
 					player_set_animation(player, "walk_mine", animation_speed_mod)
+					player:set_eye_offset({x=0,y=0,z=0},{x=0,y=0,z=0})
 				else
 					player_set_animation(player, "walk", animation_speed_mod)
+					player:set_eye_offset({x=0,y=0,z=0},{x=0,y=0,z=0})
 				end
 			elseif controls.LMB then
 				player_set_animation(player, "mine")
-			else
+			elseif player_anim[name] ~= "lay" and player_anim[name] ~= "sit" then
 				player_set_animation(player, "stand", animation_speed_mod)
+				player:set_eye_offset({x=0,y=0,z=0},{x=0,y=0,z=0})
 			end
 		end
 	end
 end)
+
+-- chat commands for changing animation to sitting and laying
+minetest.register_chatcommand("sit",{
+	func = function( name, param )
+		local player = minetest.get_player_by_name(name)
+		default.player_set_animation(player, "sit")
+		player:set_eye_offset({x=0,y=-6,z=0},{x=0,y=-6,z=0})
+	end,
+})
+
+minetest.register_chatcommand("sleep",{
+	func = function( name, param )
+		local player = minetest.get_player_by_name(name)
+		default.player_set_animation(player, "lay")
+		-- we can't have pos1p match pos3p because pos3p y offset is limited to -10
+		player:set_eye_offset({x=0,y=-14,z=0},{x=0,y=-10,z=0})
+	end,
+})
+
+minetest.register_chatcommand("stand",{
+	func = function( name, param )
+		local player = minetest.get_player_by_name(name)
+		default.player_set_animation(player, "stand")
+		player:set_eye_offset({x=0,y=0,z=0},{x=0,y=0,z=0})
+	end,
+})
