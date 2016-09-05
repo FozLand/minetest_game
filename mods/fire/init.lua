@@ -100,7 +100,8 @@ minetest.register_tool("fire:flint_and_steel", {
 				nodedef.on_ignite(pointed_thing.under, user)
 			elseif minetest.get_item_group(node_under, "flammable") >= 1
 					and minetest.get_node(pointed_thing.above).name == "air" then
-				minetest.set_node(pointed_thing.above, {name = "fire:basic_flame"})
+				--minetest.set_node(pointed_thing.above, {name = "fire:basic_flame"})
+				minetest.set_node(pointed_thing.above, {name = "fake_fire:fake_fire"})
 			end
 		end
 		if not (creative and creative.is_enabled_for
@@ -334,6 +335,7 @@ else -- Fire enabled
 			local p = minetest.find_node_near(pos, 1, {"air"})
 			if p then
 				minetest.set_node(p, {name = "fire:basic_flame"})
+				fire.last_spread_pos = p
 			end
 		end,
 	})
@@ -363,3 +365,61 @@ else -- Fire enabled
 	})
 
 end
+
+function fire.alarm()
+	local pos = fire.last_spread_pos
+
+	if pos and pos.y > 0 then
+		fire.last_spread_pos = nil
+
+		local node = minetest.get_node_or_nil(pos)
+		if node and node.name == "fire:basic_flame" then
+			local nearest_player_name = ""
+			local nearest_distance = 32000
+			for _,player in pairs(minetest.get_connected_players()) do
+				local distance = math.floor(vector.distance(player:getpos(),pos))
+				if distance < nearest_distance then
+					nearest_distance = distance
+					nearest_player_name = player:get_player_name()
+				end
+			end
+			minetest.chat_send_all("ALERT: Fire is spreading at "..
+				minetest.pos_to_string(pos).."; "..nearest_distance.." nodes away from "..
+				nearest_player_name..".")
+		end
+	end
+	minetest.after(10, fire.alarm)
+end
+
+minetest.after(10, fire.alarm)
+
+-- Rarely ignite things from far
+
+--[[ Currently disabled to reduce the chance of uncontrollable spreading
+	fires that disrupt servers. Also for less lua processing load.
+
+minetest.register_abm({
+	nodenames = {"group:igniter"},
+	neighbors = {"air"},
+	interval = 5,
+	chance = 10,
+	action = function(pos, node, active_object_count, active_object_count_wider)
+		local reg = minetest.registered_nodes[node.name]
+		if not reg or not reg.groups.igniter or reg.groups.igniter < 2 then
+			return
+		end
+		local d = reg.groups.igniter
+		local p = minetest.find_node_near(pos, d, {"group:flammable"})
+		if p then
+			-- If there is water or stuff like that around flame, don't ignite
+			if fire.flame_should_extinguish(p) then
+				return
+			end
+			local p2 = fire.find_pos_for_flame_around(p)
+			if p2 then
+				minetest.set_node(p2, {name = "fire:basic_flame"})
+			end
+		end
+	end,
+})
+--]]
