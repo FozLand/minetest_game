@@ -1,5 +1,10 @@
 tnt = {}
 
+minetest.register_privilege(
+	"tnt",
+	"Allows player to place tnt."
+)
+
 -- Default to enabled when in singleplayer
 local enable_tnt = minetest.setting_getbool("enable_tnt")
 if enable_tnt == nil then
@@ -536,6 +541,16 @@ function tnt.register_tnt(def)
 			is_ground_content = false,
 			groups = {dig_immediate = 2, mesecon = 2, tnt = 1},
 			sounds = default.node_sound_wood_defaults(),
+			on_place = function(itemstack, placer, pointed_thing)
+				local name = placer:get_player_name()
+				if not minetest.get_player_privs(name).tnt and
+				   not minetest.get_player_privs(name).server then
+					minetest.chat_send_player(name, 'You do not have tnt privileges.')
+				else
+					minetest.chat_send_player(name, 'You _do_ have tnt privileges.')
+					minetest.item_place(itemstack, placer, pointed_thing)
+				end
+			end,
 			on_punch = function(pos, node, puncher)
 				if puncher:get_wielded_item():get_name() == "default:torch" then
 					minetest.set_node(pos, {name = name .. "_burning"})
