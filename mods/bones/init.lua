@@ -122,6 +122,15 @@ minetest.register_node("bones:bones", {
 	end,
 })
 
+minetest.register_craft({
+	output = "bones:bones",
+	recipe = {
+		{"default:stick", "default:clay_lump", "default:stick"},
+		{"", "default:clay_lump", ""},
+		{"default:stick", "", "default:stick"}
+	}
+})
+
 local function may_replace(pos, player)
 	local node_name = minetest.get_node(pos).name
 	local node_definition = minetest.registered_nodes[node_name]
