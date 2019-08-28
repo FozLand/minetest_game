@@ -340,8 +340,10 @@ farming.register_plant = function(name, def)
 			items = {
 				{items = {mname .. ":" .. pname}, rarity = base_rarity},
 				{items = {mname .. ":" .. pname}, rarity = base_rarity * 2},
+				{items = {mname .. ":" .. pname}, rarity = base_rarity * 5},
 				{items = {mname .. ":seed_" .. pname}, rarity = base_rarity},
 				{items = {mname .. ":seed_" .. pname}, rarity = base_rarity * 2},
+				{items = {mname .. ":seed_" .. pname}, rarity = base_rarity * 5},
 			}
 		}
 		local nodegroups = {snappy = 3, flammable = 2, plant = 1, not_in_creative_inventory = 1, attached_node = 1}

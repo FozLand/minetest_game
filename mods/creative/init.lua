@@ -10,7 +10,7 @@ local creative_mode_cache = minetest.settings:get_bool("creative_mode")
 
 function creative.is_enabled_for(name)
 	return creative_mode_cache or
-		minetest.check_player_privs(name, {creative = true})
+		false--minetest.check_player_privs(name, {creative = true})
 end
 
 dofile(minetest.get_modpath("creative") .. "/inventory.lua")
